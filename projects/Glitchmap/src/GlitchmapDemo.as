@@ -1,7 +1,7 @@
 
 /**		
  * 
- *	Main
+ *	GlitchmapDemo
  *	
  *	@version 1.00 | Feb 2, 2010
  *	@author Justin Windle
@@ -35,14 +35,15 @@ package
 	import flash.geom.Rectangle;
 	import flash.net.FileFilter;
 	import flash.net.FileReference;
+	import flash.utils.ByteArray;
 
 	/**
-	 * Main
+	 * GlitchmapDemo
 	 */
 
 	[SWF(width="900", height="650", backgroundColor="#FFFFFF", frameRate="31")]
 
-	public class Main extends Sprite 
+	public class GlitchmapDemo extends Sprite 
 	{
 
 		//	----------------------------------------------------------------
@@ -60,7 +61,7 @@ package
 		private var _iterationsSlider : Slider = new Slider();
 		private var _glitchinessLabel : Label = new Label();
 		private var _glitchinessSlider : Slider = new Slider();
-		private var _loadButton : PushButton = new PushButton();		private var _saveButton : PushButton = new PushButton();
+		private var _loadButton : PushButton = new PushButton();		private var _saveButton : PushButton = new PushButton();		private var _downloadButton : PushButton = new PushButton();		private var _cancelButton : PushButton = new PushButton();		private var _downloadLabel : Label = new Label();
 		private var _progressBar : ProgressBar = new ProgressBar();
 		private var _progressLabel : Label = new Label();
 		private var _animateCB : CheckBox = new CheckBox();
@@ -68,9 +69,10 @@ package
 		private var _fileReference : FileReference = new FileReference();
 		private var _glitchmap : Glitchmap = new Glitchmap();
 		private var _byteLoader : Loader = new Loader();
-		private var _interface : Sprite = new Sprite();		private var _overlay : Sprite = new Sprite();
+		private var _interface : Sprite = new Sprite();		private var _progressOverlay : Sprite = new Sprite();		private var _downloadOverlay : Sprite = new Sprite();
 
-		private var _imageName : String = "dinodog.jpg";
+		private var _imageName : String = "code-image.jpg";
+		private var _encodedBytes : ByteArray;
 		private var _encoder : JPEGAsyncVectorEncoder = new JPEGAsyncVectorEncoder(100);
 		private var _bounds : Rectangle = new Rectangle(20, 20, 860, 570);		private var _limit : Rectangle = new Rectangle(0, 0, 800, 800);
 
@@ -82,7 +84,7 @@ package
 		//	CONSTRUCTOR
 		//	----------------------------------------------------------------
 
-		public function Main()
+		public function GlitchmapDemo()
 		{
 			_encoder.PixelsPerIteration = 256;
 			addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
@@ -103,7 +105,7 @@ package
 			
 			_glitchmap.addEventListener(Event.CHANGE, onInitialImageReady);
 			_glitchmap.addEventListener(ProgressEvent.PROGRESS, onLoadProgress);			_glitchmap.addEventListener(Event.COMPLETE, onLoadComplete);
-			_glitchmap.loadImage(_imageName);
+			_glitchmap.loadImage("http://blog.soulwire.co.uk/wp-content/uploads/2010/02/code.jpg");
 			addChild(_glitchmap);
 			
 			configureUI();
@@ -119,7 +121,7 @@ package
 		private function onLoadProgress(event : ProgressEvent) : void
 		{
 			_progressBar.value = event.bytesLoaded / event.bytesTotal;
-			_overlay.visible = _progressBar.value < 1;
+			_progressOverlay.visible = _progressBar.value < 1;
 			_progressLabel.text = "[" + int(_progressBar.value * 100) + "%] LOADING IMAGE...";
 		}
 
@@ -186,7 +188,7 @@ package
 			_interface.graphics.beginFill(0x222222);
 			_interface.graphics.drawRect(0, 0, stage.stageWidth, 40);
 			
-			// Overlay
+			// Progress Overlay
 
 			_progressLabel.text = "PROCESSING...";
 			
@@ -204,18 +206,46 @@ package
 			pattern.setPixel32(2, 4, col);
 			pattern.setPixel32(4, 4, col);
 			
-			_overlay.graphics.beginBitmapFill(pattern);
-			_overlay.graphics.drawRect(0, 0, stage.stageWidth, stage.stageHeight);
-			_overlay.graphics.endFill();
+			_progressOverlay.graphics.beginBitmapFill(pattern);
+			_progressOverlay.graphics.drawRect(0, 0, stage.stageWidth, stage.stageHeight);
+			_progressOverlay.graphics.endFill();
 
-			_overlay.addChild(_progressBar);			_overlay.addChild(_progressLabel);
-			_overlay.visible = false;
+			_progressOverlay.addChild(_progressBar);			_progressOverlay.addChild(_progressLabel);
+			_progressOverlay.visible = false;
+			
+			// Download overlay
+
+			_downloadLabel.text = "PROCESSING COMPLETE!";
+			
+			_downloadLabel.x = _bounds.x + (_bounds.width >> 1) - 100;
+			_downloadLabel.y = _bounds.y + (_bounds.height >> 1) - 30;
+			
+			_downloadButton.label = "DOWNLOAD IMAGE";
+			
+			_downloadButton.x = _downloadLabel.x;
+			_downloadButton.y = _downloadLabel.y + 20;
+			_downloadButton.width = 200;
+			
+			_cancelButton.label = "CANCEL";
+			
+			_cancelButton.x = _downloadButton.x;
+			_cancelButton.y = _downloadButton.y + 25;
+			_cancelButton.width = 200;
+			
+			_downloadOverlay.graphics.beginBitmapFill(pattern);
+			_downloadOverlay.graphics.drawRect(0, 0, stage.stageWidth, stage.stageHeight);
+			_downloadOverlay.graphics.endFill();
+			
+			_downloadOverlay.addChild(_downloadLabel);			_downloadOverlay.addChild(_downloadButton);			_downloadOverlay.addChild(_cancelButton);
+			_downloadOverlay.visible = false;
 			
 			// Listeners
 
 			_glitchinessSlider.addEventListener(Event.CHANGE, onComponentChanged);			_iterationsSlider.addEventListener(Event.CHANGE, onComponentChanged);			_seedSlider.addEventListener(Event.CHANGE, onComponentChanged);
 			_animateCB.addEventListener(MouseEvent.CLICK, onAnimateClicked);
 			_loadButton.addEventListener(MouseEvent.CLICK, onButtonClicked);			_saveButton.addEventListener(MouseEvent.CLICK, onButtonClicked);
+			_downloadButton.addEventListener(MouseEvent.CLICK, onButtonClicked);
+			_cancelButton.addEventListener(MouseEvent.CLICK, onButtonClicked);
 
 			_interface.addChild(_glitchinessSlider);
 			_interface.addChild(_glitchinessLabel);			_interface.addChild(_iterationsLabel);			_interface.addChild(_iterationsSlider);
@@ -223,7 +253,7 @@ package
 			_interface.addChild(_seedLabel);			_interface.addChild(_animateCB);
 			_interface.addChild(_loadButton);			_interface.addChild(_saveButton);
 			
-			addChild(_interface);			addChild(_overlay);
+			addChild(_interface);			addChild(_progressOverlay);			addChild(_downloadOverlay);
 		}
 
 		private function drawBorder() : void
@@ -250,8 +280,17 @@ package
 		private function saveImage() : void
 		{
 			_encoder.addEventListener(JPEGAsyncCompleteEvent.JPEGASYNC_COMPLETE, onAsyncEncodeForSaveComplete);
-			_encoder.addEventListener(ProgressEvent.PROGRESS, onAsyncEncodingProgress);
+			_encoder.addEventListener(ProgressEvent.PROGRESS, onAsyncEncodeForSaveProgress);
 			_encoder.encode(_glitchmap.bitmapData);
+		}
+
+		private function downloadImage() : void
+		{
+			var filename : String = _imageName.substr(0, _imageName.lastIndexOf(".")) + "_GL1TCH3D.jpg";
+			
+			_fileReference = new FileReference();
+			_fileReference.addEventListener(Event.SELECT, onDownloadLocationSelected);
+			_fileReference.save(_encodedBytes, filename);
 		}
 
 		private function randomise() : void
@@ -336,7 +375,7 @@ package
 		private function onAsyncEncodingProgress(event : ProgressEvent) : void
 		{
 			_progressBar.value = event.bytesLoaded / event.bytesTotal;
-			_overlay.visible = _progressBar.value < 1;
+			_progressOverlay.visible = _progressBar.value < 1;
 			_progressLabel.text = "[" + int(_progressBar.value * 100) + "%] PROCESSING...";
 		}
 
@@ -356,15 +395,27 @@ package
 			drawBorder();
 		}
 
+		private function onAsyncEncodeForSaveProgress(event : ProgressEvent) : void
+		{
+			_progressBar.value = event.bytesLoaded / event.bytesTotal;
+			_progressOverlay.visible = _progressBar.value < 1;
+			_downloadOverlay.visible = !_progressOverlay.visible;
+			_progressLabel.text = "[" + int(_progressBar.value * 100) + "%] PROCESSING...";
+		}
+
 		private function onAsyncEncodeForSaveComplete(event : JPEGAsyncCompleteEvent) : void
 		{
 			_encoder.removeEventListener(JPEGAsyncCompleteEvent.JPEGASYNC_COMPLETE, onAsyncEncodeForSaveComplete);
-			_encoder.removeEventListener(ProgressEvent.PROGRESS, onAsyncEncodingProgress);
+			_encoder.removeEventListener(ProgressEvent.PROGRESS, onAsyncEncodeForSaveProgress);
+			_encodedBytes = event.ImageData;
 			
-			var filename : String = _imageName.substr(0, _imageName.lastIndexOf(".")) + "_GL1TCH3D.jpg";
-			
-			_fileReference = new FileReference();
-			_fileReference.save(event.ImageData, filename);
+			_downloadOverlay.visible = true;
+		}
+
+		private function onDownloadLocationSelected(event : Event) : void
+		{
+			_fileReference.removeEventListener(Event.SELECT, onDownloadLocationSelected);
+			_downloadOverlay.visible = false;
 		}
 
 		private function onAnimateClicked(event : MouseEvent) : void
@@ -447,6 +498,18 @@ package
 				
 					saveImage();
 				 
+					break;
+					
+				case _downloadButton :
+				
+					downloadImage();
+				 
+					break;
+					
+				case _cancelButton :
+				
+					_downloadOverlay.visible = false;
+					
 					break;
 			}
 		}
