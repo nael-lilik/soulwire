@@ -54,6 +54,7 @@ package
 		private var _layout : Layout = new Layout();
 		private var _assetLoader : Loader = new Loader();
 		private var _buttonIndex : Dictionary = new Dictionary();
+		private var _container : Sprite = new Sprite();
 		
 		// Example DynamicSprites
 		private var _helloWorld : DynamicSprite;		private var _flagIcon : DynamicSprite;
@@ -64,31 +65,45 @@ package
 		
 		public function DynamicSpriteExample()
 		{
+			addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
+		}
+
+		//	----------------------------------------------------------------
+		//	PRIVATE METHODS
+		//	----------------------------------------------------------------
+		
+		private function initialise() : void
+		{
 			/**
 			 * Create a DynamicSprite instance.
 			 * You do not have to pass a class definition to the constructor, 
 			 * you can set this or change it later or at runtime if desired.
 			 */
 			 
-			_helloWorld = new DynamicSprite( "assets.example.HelloWorld" );			_flagIcon = new DynamicSprite( "assets.example.Flag" );
+			_helloWorld = new DynamicSprite( "assets.example.HelloWorld" );
+			_flagIcon = new DynamicSprite( "assets.example.Flag" );
 			
 			// When a DynamicSprite's asset is updated, it will dispatch an INSTANCE_UPDATED event.
-			_helloWorld.addEventListener(DynamicSprite.INSTANCE_UPDATED, onDynamicSpriteUpdated);			_flagIcon.addEventListener(DynamicSprite.INSTANCE_UPDATED, onDynamicSpriteUpdated);
+			_helloWorld.addEventListener(DynamicSprite.INSTANCE_UPDATED, onDynamicSpriteUpdated);
+			_flagIcon.addEventListener(DynamicSprite.INSTANCE_UPDATED, onDynamicSpriteUpdated);
 			
 			// Effects and transformations will persist when the asset is updated
 			_helloWorld.filters = [ new GlowFilter(0xFFFFFF, 1.0, 8, 8, 0.5, 3) ];
-			_helloWorld.scaleX = _helloWorld.scaleY = 1.5;
+			_helloWorld.scaleX = _helloWorld.scaleY = 2.8;
 			
 			_flagIcon.scaleX = _flagIcon.scaleY = 1.9;
 			_flagIcon.x = 750;
 			_flagIcon.y = 10;
 			
 			// Add it to the stage
-			addChild(_helloWorld);			addChild(_flagIcon);
+			addChild(_flagIcon);
+			addChild(_container);
+			_container.addChild(_helloWorld);
 			
 			// You can also listen global for when a library is added or updated...
 			DynamicSprite.addEventListener(DynamicSprite.LIBRARY_UPDATE_START, onLibraryUpdateStart);
-			// ...and for when all instances have been updated from it.			DynamicSprite.addEventListener(DynamicSprite.LIBRARY_UPDATE_COMPLETE, onLibraryUpdateComplete);
+			// ...and for when all instances have been updated from it.
+			DynamicSprite.addEventListener(DynamicSprite.LIBRARY_UPDATE_COMPLETE, onLibraryUpdateComplete);
 			
 			// Create buttons
 			
@@ -116,11 +131,9 @@ package
 			// Load the default assets
 			
 			loadAssets( LANGUAGES[0].path );
+			
+			addEventListener(Event.ENTER_FRAME, onEnterFrame);
 		}
-
-		//	----------------------------------------------------------------
-		//	PRIVATE METHODS
-		//	----------------------------------------------------------------
 		
 		private function loadAssets(path : String) : void
 		{
@@ -152,6 +165,17 @@ package
 		//	----------------------------------------------------------------
 		//	EVENT HANDLERS
 		//	----------------------------------------------------------------
+		
+		private function onAddedToStage(event : Event) : void
+		{
+			initialise();
+			_container.x = stage.stageWidth * 0.5;			_container.y = stage.stageHeight * 0.5;
+		}
+
+		private function onEnterFrame(event : Event) : void
+		{
+			_container.rotationY++;
+		}
 
 		private function onLanguageSelected(event : MouseEvent) : void 
 		{
@@ -214,10 +238,11 @@ package
 				
 					var bounds : Rectangle = sprite.getBounds(sprite);
 			
-					sprite.x = (stage.stageWidth * 0.5) - (bounds.width * 0.5);
-					sprite.y = (stage.stageHeight * 0.5) - 100;
+					sprite.x = - ((bounds.width * sprite.scaleX) * 0.5);
+					sprite.y = - ((bounds.height * sprite.scaleY) * 0.5) - 45;
 				
-					break;				case _flagIcon : 
+					break;
+									case _flagIcon : 
 				
 					sprite.x = stage.stageWidth - sprite.width - 10;
 				
