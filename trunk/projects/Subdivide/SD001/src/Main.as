@@ -10,21 +10,24 @@
  
 package  
 {
-	import flash.utils.ByteArray;
-	import com.bit101.components.Label;
-	import com.bit101.components.ProgressBar;
+	import com.bit101.components.Style;
 	import geom.Polygon;
 
 	import com.bit101.components.HUISlider;
+	import com.bit101.components.Label;
+	import com.bit101.components.ProgressBar;
 	import com.bit101.components.PushButton;
 	import com.pfp.events.JPEGAsyncCompleteEvent;
 	import com.pfp.utils.JPEGAsyncVectorEncoder;
 
 	import flash.display.Sprite;
+	import flash.display.StageAlign;
+	import flash.display.StageScaleMode;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.events.ProgressEvent;
 	import flash.net.FileReference;
+	import flash.utils.ByteArray;
 
 	/**
 	 * Main
@@ -48,12 +51,12 @@ package
 		private var _subdivision : Subdivision;
 		private var _overlay : Sprite = new Sprite();
 		
-		private var _useLongestSlider : HUISlider = new HUISlider();
-		private var _useRandomSlider : HUISlider = new HUISlider();
-		private var _subdivideSlider : HUISlider = new HUISlider();		private var _minAvSideSlider : HUISlider = new HUISlider();
-		private var _downloadButton : PushButton = new PushButton();
-		private var _saveButton : PushButton = new PushButton();
-		private var _progress : ProgressBar = new ProgressBar();		private var _saving : Label = new Label();
+		private var _useLongestSlider : HUISlider;
+		private var _useRandomSlider : HUISlider;
+		private var _subdivideSlider : HUISlider;		private var _minAvSideSlider : HUISlider;
+		private var _downloadButton : PushButton;
+		private var _saveButton : PushButton;
+		private var _progress : ProgressBar;		private var _saving : Label;		private var _click : Label;
 		
 		private var _encoder : JPEGAsyncVectorEncoder = new JPEGAsyncVectorEncoder(100);
 
@@ -80,14 +83,24 @@ package
 			_subdivision.addEventListener(Event.COMPLETE, onSubdivisionComplete);
 			addChild(_subdivision);
 			
-			configureListeners();
 			buildInterface();
+			configureListeners();
 			start();
 		}
 		
 		private function buildInterface() : void
 		{
 			var xp : int = 10;			var yp : int = stage.stageHeight - UI_HEIGHT + 10;
+			
+			Style.LABEL_TEXT = 0xBBBBBB;
+			Style.BUTTON_FACE = 0x222222;
+			
+			_useLongestSlider = new HUISlider();			_useRandomSlider = new HUISlider();			_subdivideSlider = new HUISlider();			_minAvSideSlider = new HUISlider();
+			_downloadButton = new PushButton();
+			_saveButton = new PushButton();
+			_progress = new ProgressBar();
+			_saving = new Label();
+			_click = new Label();
 			
 			_useLongestSlider.label = "Regularity:".toUpperCase();
 			_useLongestSlider.labelPrecision = 2;			_useLongestSlider.minimum = 0.0;
@@ -98,7 +111,7 @@ package
 			
 			_useRandomSlider.label = "Random:".toUpperCase();
 			_useRandomSlider.labelPrecision = 2;			_useRandomSlider.minimum = 0.0;
-			_useRandomSlider.maximum = 0.0;			_useRandomSlider.value = 0.1;			_useRandomSlider.tick = 0.01;			_useRandomSlider.x = xp;			_useRandomSlider.y = yp;
+			_useRandomSlider.maximum = 1.0;			_useRandomSlider.value = 0.1;			_useRandomSlider.tick = 0.01;			_useRandomSlider.x = xp;			_useRandomSlider.y = yp;
 			
 			xp += 190;
 			
@@ -118,15 +131,23 @@ package
 			_saveButton.x = stage.stageWidth - _saveButton.width - 10;;
 			_saveButton.y = yp;
 			
+			_click.text = "Click to Regenerate".toUpperCase();
+			_click.x = (stage.stageWidth * 0.5) - (50);
+			_click.y = yp - 40;
+			
 			_subdivision.useLongestSideChance = _useLongestSlider.value;			_subdivision.useRandomPointsChance = _useRandomSlider.value;			_subdivision.subdividePolygonChance = _subdivideSlider.value;			_subdivision.minAverageSideLength = _minAvSideSlider.value;
 			
-			addChild(_useLongestSlider);			addChild(_useRandomSlider);			addChild(_subdivideSlider);			addChild(_minAvSideSlider);			addChild(_saveButton);
+			addChild(_useLongestSlider);			addChild(_useRandomSlider);			addChild(_subdivideSlider);			addChild(_minAvSideSlider);			addChild(_saveButton);			addChild(_click);
 			
 			graphics.beginFill(0x111111);
 			graphics.drawRect(0, yp - 10, stage.stageWidth, UI_HEIGHT);
 			graphics.endFill();
+			
+			_click.graphics.beginFill(0x111111, 0.8);
+			_click.graphics.drawRoundRect(-10, -2, 126, 24, 7, 7);
+			_click.graphics.endFill();
 		}
-	
+
 		private function configureListeners() : void
 		{
 			_useLongestSlider.addEventListener(Event.CHANGE, onSliderChanged);			_useRandomSlider.addEventListener(Event.CHANGE, onSliderChanged);			_subdivideSlider.addEventListener(Event.CHANGE, onSliderChanged);			_minAvSideSlider.addEventListener(Event.CHANGE, onSliderChanged);
@@ -181,6 +202,8 @@ package
 
 		private function onAddedToStage(event : Event) : void
 		{
+			stage.scaleMode = StageScaleMode.NO_SCALE;
+			stage.align = StageAlign.TOP_LEFT;
 			initialise();
 		}
 
@@ -258,6 +281,7 @@ package
 
 		private function onSubdivisionClicked(event : MouseEvent) : void 
 		{
+			_click.visible = false;
 			start();
 		}
 	}
