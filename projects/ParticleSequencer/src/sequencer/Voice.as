@@ -8,7 +8,7 @@
  *  
  **/
  
-package synth 
+package sequencer 
 {
 	import test.effects.Delay;
 	import test.poly.SimplePolySynthVoiceFactory;

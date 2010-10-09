@@ -10,7 +10,7 @@
  
 package  
 {
-	import synth.Brain;
+	import sequencer.Brain;
 
 	import tonfall.display.AbstractApplication;
 

@@ -8,7 +8,7 @@
  *  
  **/
  
-package synth 
+package sequencer 
 {
 	import flash.display.BlendMode;
 	import flash.display.Sprite;
