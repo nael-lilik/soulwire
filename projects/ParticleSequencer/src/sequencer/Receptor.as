@@ -1,7 +1,7 @@
 
 /**		
  * 
- *	synth.Receptor
+ *	sequencer.Receptor
  *	
  *	@version 1.00 | Oct 5, 2010
  *	@author Justin Windle

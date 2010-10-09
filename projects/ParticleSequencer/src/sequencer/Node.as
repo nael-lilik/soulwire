@@ -1,7 +1,7 @@
 
 /**		
  * 
- *	synth.Node
+ *	sequencer.Node
  *	
  *	@version 1.00 | Oct 5, 2010
  *	@author Justin Windle
