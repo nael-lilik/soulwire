@@ -10,15 +10,16 @@
  
 package  
 {
-	import flash.events.MouseEvent;
-	import tonfall.display.Spectrum;
-	import com.bit101.components.CheckBox;
-	import synth.Brain;
+	import sequencer.Brain;
 
+	import tonfall.display.Spectrum;
+
+	import com.bit101.components.CheckBox;
 	import com.bit101.components.HUISlider;
 
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.events.MouseEvent;
 
 	/**
 	 * GUI

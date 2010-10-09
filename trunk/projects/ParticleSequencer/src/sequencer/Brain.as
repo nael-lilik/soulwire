@@ -8,7 +8,7 @@
  *  
  **/
  
-package synth 
+package sequencer 
 {
 	import flash.display.Sprite;
 	import flash.events.Event;

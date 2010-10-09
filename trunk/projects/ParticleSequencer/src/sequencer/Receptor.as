@@ -8,7 +8,7 @@
  *  
  **/
  
-package synth 
+package sequencer 
 {
 	import math.random;
 
